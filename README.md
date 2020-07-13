@@ -5,6 +5,10 @@
 
 > TicTacToe with AI implemented via minimax algorithm
 
+## TODO
+
+- [ ] Make AWS Lambda into HTTP API
+
 ## Deployment
 
 The function is deployed on AWS Lambda.
