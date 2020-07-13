@@ -22,7 +22,7 @@ Request with the following body:
 
 #### State
 
-state represents the current board of the tic-tac-toe table. 
+state represents the current board of the tic-tac-toe table.
 
 | Play  | State Number |
 | ----- | ------------ |
@@ -34,13 +34,11 @@ For instance the board below would be represented with the following state strin
 
 ```json
 {
-    "state": "012020100"
+  "state": "012020100"
 }
 ```
 
-![](.\assets\012020100.png)
-
-
+![](\assets\012020100.png)
 
 #### BotIsX
 
@@ -48,11 +46,9 @@ botIsX represents whether the box is X or O. If the bot is playing as X value is
 
 ```json
 {
-    "botIsX": 1
+  "botIsX": 1
 }
 ```
-
-
 
 ## Response
 
@@ -60,13 +56,11 @@ Response would look like the following:
 
 ```json
 {
-    "action": 5,
-    "status": "Success",
-    "error": null
+  "action": 5,
+  "status": "Success",
+  "error": null
 }
 ```
-
-
 
 #### Action
 
@@ -86,4 +80,3 @@ The following are type of errors that can happen:
 | State Length Error   | State should always be 9 digits long |
 | Invalid State Error  | State should either be 0, 1, or 2    |
 | Invalid BotIsX Error | BotIsX should always be 0 or 1       |
-
