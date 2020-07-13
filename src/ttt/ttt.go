@@ -78,9 +78,25 @@ func IsFinished(state [9]int) bool {
 	return false
 }
 
+func isEmpty(state [9]int) bool {
+	empty := true
+	for _, pos := range state {
+		if pos != EMPTY {
+			empty = false
+		}
+	}
+	return empty
+}
+
 // GetNextAIMove gets the next best AI move based on Minimax algorithm
-func GetNextAIMove(state [9]int) int {
-	action := minimax(state, true)
+func GetNextAIMove(state [9]int, botIsX bool) int {
+
+	// Bot goes first and the board is empty return center action
+	if !botIsX && isEmpty(state) {
+		return 4
+	}
+
+	action := minimax(state, botIsX)
 
 	return action
 }

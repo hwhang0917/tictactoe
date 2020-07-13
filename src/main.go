@@ -17,14 +17,12 @@ const E int = 0
 
 func main() {
 	sampleState := [9]int{
-		E, X, O,
-		E, O, E,
-		E, E, E,
+		O, O, X,
+		X, O, O,
+		O, X, X,
 	}
 
 	// fmt.Println(ttt.EvaluateGame(sampleState))
 	// fmt.Println(ttt.IsFinished(sampleState))
-
-	// Expected 6
-	fmt.Println(ttt.GetNextAIMove(sampleState))
+	fmt.Println(ttt.GetNextAIMove(sampleState, false))
 }
