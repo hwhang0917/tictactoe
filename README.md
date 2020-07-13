@@ -38,7 +38,7 @@ For instance the board below would be represented with the following state strin
 }
 ```
 
-![](assets\012020100.png)
+![](./assets/012020100.png)
 
 #### BotIsX
 
