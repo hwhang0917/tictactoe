@@ -8,6 +8,7 @@
 ## TODO
 
 - [ ] Make AWS Lambda into HTTP API
+- [ ] Build Frontend web with React JS
 
 ## Deployment
 

@@ -1,11 +1,12 @@
 package main
 
 import (
-	"context"
+	"encoding/json"
 	"errors"
 	"strconv"
 	"strings"
 
+	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/tictactoe/src/ttt"
 )
@@ -32,6 +33,9 @@ type Response struct {
 	Err    error  `json:"error"`
 }
 
+// ErrInvalidMethod is an error for when the HTTP method is wrong
+var ErrInvalidMethod error = errors.New("Invalid method only [get] method is allowed")
+
 // ErrBotIsX is an error for when botIsX is not 1 or 0
 var ErrBotIsX error = errors.New("BotIsX should be either 1 or 0")
 
@@ -41,34 +45,53 @@ var ErrLength error = errors.New("Length does not match 9 digits")
 // ErrStateType is an error for when requested state contains number other than 0, 1, or 2
 var ErrStateType error = errors.New("State numbers should be 0, 1, or 2")
 
+// ErrUnmarshalFail is an error for when the Body is unable to be unmarshaled
+var ErrUnmarshalFail error = errors.New("Invalid body framing, unable to unmarshal JSON")
+
+// marshal JSON
+func constructResponse(res Response) string {
+	resp, _ := json.Marshal(res)
+	return string(resp[:])
+}
+
 // HandleRequest Lambda
-func HandleRequest(ctx context.Context, req Body) (Response, error) {
+func HandleRequest(req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	var state [9]int
 	var botIsX bool
-	stringArr := strings.Split(req.State, "")
-	if req.BotIsX == 0 {
-		botIsX = false
-	} else if req.BotIsX == 1 {
-		botIsX = true
-	} else {
-		return Response{Action: -1, Status: "Failed", Err: ErrBotIsX}, ErrBotIsX
-	}
-	// Length doesn't match 9
-	if len(stringArr) != 9 {
-		return Response{Action: -1, Status: "Failed", Err: ErrLength}, ErrLength
-	}
-	for idx, pos := range stringArr { // Convert to integers
-		posInt, err := strconv.Atoi(pos)
-		if err != nil { // Cannot parse none number to integer
-			return Response{Action: -1, Status: "Failed", Err: err}, err
+	var request Body
+
+	if req.HTTPMethod == "GET" { // Allow only GET method
+		// Unmarshal Request.body JSON
+		err := json.Unmarshal([]byte(req.Body), &request)
+		if err != nil {
+			return events.APIGatewayProxyResponse{StatusCode: 400}, ErrUnmarshalFail
 		}
-		if posInt == 1 || posInt == 2 || posInt == 0 {
-			state[idx] = posInt
-		} else { // State contains other number than 0, 1, or 2
-			return Response{Action: -1, Status: "Failed", Err: ErrStateType}, ErrStateType
+		stringArr := strings.Split(request.State, "")
+		if request.BotIsX == 0 {
+			botIsX = false
+		} else if request.BotIsX == 1 {
+			botIsX = true
+		} else {
+			return events.APIGatewayProxyResponse{Body: constructResponse(Response{Action: -1, Status: "Failed", Err: ErrBotIsX})}, ErrBotIsX
 		}
+		// Length doesn't match 9
+		if len(stringArr) != 9 {
+			return events.APIGatewayProxyResponse{Body: constructResponse(Response{Action: -1, Status: "Failed", Err: ErrLength})}, ErrLength
+		}
+		for idx, pos := range stringArr { // Convert to integers
+			posInt, err := strconv.Atoi(pos)
+			if err != nil { // Cannot parse none number to integer
+				return events.APIGatewayProxyResponse{Body: constructResponse(Response{Action: -1, Status: "Failed", Err: err})}, err
+			}
+			if posInt == 1 || posInt == 2 || posInt == 0 {
+				state[idx] = posInt
+			} else { // State contains other number than 0, 1, or 2
+				return events.APIGatewayProxyResponse{Body: constructResponse(Response{Action: -1, Status: "Failed", Err: ErrStateType})}, ErrStateType
+			}
+		}
+		return events.APIGatewayProxyResponse{Body: constructResponse(Response{Action: ttt.GetNextAIMove(state, botIsX), Status: "Success", Err: nil})}, nil
 	}
-	return Response{Action: ttt.GetNextAIMove(state, botIsX), Status: "Success", Err: nil}, nil
+	return events.APIGatewayProxyResponse{StatusCode: 405}, ErrInvalidMethod
 }
 
 func main() {
